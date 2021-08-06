@@ -10,11 +10,16 @@ function VideoPlayer() {
             backgroundColor: '#f4f4f4',
             height: '100%'
         },
-        video: {
+        videoWrap: {
             width: 250,
             float: 'left',
             margin: 10,
-            border: '1px solid #ccc'
+            border: '1px solid #ccc',
+            textAlign: 'center'
+        },
+        video: {
+            width: 250,
+            height: 'auto'
         }
     }
 
@@ -22,16 +27,16 @@ function VideoPlayer() {
 
     return (
         <div style={classes.wrapper}>
-            {stream && <div className='my-video' style={classes.video}>
+            {stream && <div className='my-video' style={classes.videoWrap}>
                 <h5>{name || 'Name'}</h5>
-                <video placeInline muted ref={myVideo} autoPlay />
+                <video placeInline muted ref={myVideo} autoPlay style={classes.video} />
             </div>}
 
 
             {callAccepted && !callEnded &&
-                <div className='user-video' style={classes.video}>
+                <div className='user-video' style={classes.videoWrap}>
                     <h5>{call.name || 'Name'}</h5>
-                    <video placeInline ref={userVideo} autoPlay />
+                    <video placeInline ref={userVideo} autoPlay style={classes.video} />
                 </div>
             }
 
