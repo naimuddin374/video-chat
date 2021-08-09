@@ -20,18 +20,19 @@ app.get('/', (req, res) => {
 
 
 io.on('connection', (socket) => {
+    console.log('Socket connected', socket.id)
     socket.emit('me', socket.id)
 
     socket.on('disconnect', () => {
-        socket.broadcast.emit('Callended')
+        socket.broadcast.emit('callEnded')
     })
 
-    socket.on('calluser', ({ userToCall, signalData, from, name }) => {
-        io.to(userToCall).emit('calluser', { signal: signalData, from, name })
+    socket.on('callUser', ({ userToCall, signalData, from, name }) => {
+        io.to(userToCall).emit('callUser', { signal: signalData, from, name })
     })
 
     socket.on('answerCall', (data) => {
-        io.to(data.to).emit('callaccepted', data.signal)
+        io.to(data.to).emit('callAccepted', data.signal)
     })
 })
 

@@ -1,6 +1,7 @@
 import { useContext } from "react"
 import { SocketContext } from "../app/SocketContext"
-
+import Notifications from "./Notifications"
+import Options from './Options'
 
 function VideoPlayer() {
     const classes = {
@@ -8,7 +9,12 @@ function VideoPlayer() {
             width: '80%',
             margin: '0 auto',
             backgroundColor: '#f4f4f4',
-            height: '100%'
+            height: '100%',
+            display: 'block'
+        },
+        videoWrapDiv: {
+            width: '100%',
+            display: 'flex'
         },
         videoWrap: {
             width: 250,
@@ -27,20 +33,24 @@ function VideoPlayer() {
 
     return (
         <div style={classes.wrapper}>
-            {stream && <div className='my-video' style={classes.videoWrap}>
-                <h5>{name || 'Name'}</h5>
-                <video placeInline muted ref={myVideo} autoPlay style={classes.video} />
-            </div>}
+            <div style={classes.videoWrapDiv}>
+                {stream && <div className='my-video' style={classes.videoWrap}>
+                    <h5>{name || 'Name'}</h5>
+                    <video playsInline muted ref={myVideo} autoPlay style={classes.video} />
+                </div>}
+
+                {callAccepted && !callEnded &&
+                    <div className='user-video' style={classes.videoWrap}>
+                        <h5>{call.name || 'Name'}</h5>
+                        <video playsInline ref={userVideo} autoPlay style={classes.video} />
+                    </div>
+                }
+            </div>
 
 
-            {callAccepted && !callEnded &&
-                <div className='user-video' style={classes.videoWrap}>
-                    <h5>{call.name || 'Name'}</h5>
-                    <video placeInline ref={userVideo} autoPlay style={classes.video} />
-                </div>
-            }
-
-
+            <Options >
+                <Notifications />
+            </Options>
         </div>
     )
 }
