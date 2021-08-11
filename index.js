@@ -20,20 +20,30 @@ app.get('/', (req, res) => {
 
 
 io.on('connection', (socket) => {
-    console.log('Socket connected', socket.id)
-    socket.emit('me', socket.id)
-
-    socket.on('disconnect', () => {
-        socket.broadcast.emit('callEnded')
+    console.log('Socket connected => ', socket.id)
+    // socket.emit('me', socket.id)
+    socket.on('joinRoom', ({ roomId, name }) => {
+        console.log(roomId, name)
+        socket.emit(roomId, name)
     })
 
-    socket.on('callUser', ({ userToCall, signalData, from, name }) => {
-        io.to(userToCall).emit('callUser', { signal: signalData, from, name })
-    })
 
-    socket.on('answerCall', (data) => {
-        io.to(data.to).emit('callAccepted', data.signal)
-    })
+    // socket.on('disconnect', () => {
+    //     socket.broadcast.emit('callEnded')
+    // })
+
+    // socket.on('callUser', ({ userToCall, signalData, from, name }) => {
+    //     io.to(userToCall).emit('callUser', { signal: signalData, from, name })
+    // })
+
+    // socket.on('answerCall', (data) => {
+    //     io.to(data.to).emit('callAccepted', data.signal)
+    // })
+
+    // socket.on(socket.id, ({ name }) => {
+    //     console.log(socket.id, name)
+    //     io.emit(socket.id, { name })
+    // })
 })
 
 

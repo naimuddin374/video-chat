@@ -1,4 +1,4 @@
-import { SocketContext } from "../app/SocketContext";
+import { SocketContext } from "../../app/SocketContext";
 import { useContext, useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 

@@ -1,5 +1,5 @@
 import { useContext } from "react"
-import { SocketContext } from "../app/SocketContext"
+import { SocketContext } from '../../app/SocketContext'
 import Notifications from "./Notifications"
 import Options from './Options'
 
