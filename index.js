@@ -1,6 +1,21 @@
-const app = require('express')()
-const server = require('http').createServer(app)
+const express = require("express");
+const http = require("http");
 const cors = require('cors')
+
+
+
+const port = process.env.PORT || 4000;
+
+
+const app = express();
+app.use(cors())
+
+app.get('/', (req, res) => {
+    res.send('Server is running')
+})
+
+
+const server = http.createServer(app);
 
 const io = require('socket.io')(server, {
     cors: {
@@ -9,42 +24,37 @@ const io = require('socket.io')(server, {
     }
 })
 
-app.use(cors())
 
 
-const PORT = process.env.PORT || 5000
+// global.io = socket
+// require('./utils/socket.js')
 
-app.get('/', (req, res) => {
-    res.send('Server is running.')
-})
+const msgArr = []
+
+const msgAddHandler = (socketId, msg) => {
+    msgArr.push({
+        socketId, msg
+    })
+}
 
 
-io.on('connection', (socket) => {
-    console.log('Socket connected => ', socket.id)
-    // socket.emit('me', socket.id)
-    socket.on('joinRoom', ({ roomId, name }) => {
-        console.log(roomId, name)
-        socket.emit(roomId, name)
+io.on("connection", socket => {
+    console.log("New client connected", socket.id);
+
+    socket.on('disconnect', () => {
+        socket.broadcast.emit('callEnded')
     })
 
+    socket.emit('me', socket.id)
 
-    // socket.on('disconnect', () => {
-    //     socket.broadcast.emit('callEnded')
-    // })
+    socket.on('sendMsg', ({ msg }) => {
+        msgAddHandler(socket.id, msg)
 
-    // socket.on('callUser', ({ userToCall, signalData, from, name }) => {
-    //     io.to(userToCall).emit('callUser', { signal: signalData, from, name })
-    // })
-
-    // socket.on('answerCall', (data) => {
-    //     io.to(data.to).emit('callAccepted', data.signal)
-    // })
-
-    // socket.on(socket.id, ({ name }) => {
-    //     console.log(socket.id, name)
-    //     io.emit(socket.id, { name })
-    // })
-})
+        io.emit('rcvMsg', msgArr)
+        console.log('send Msg=>', msg)
+    })
+});
 
 
-server.listen(PORT, () => console.log(`Server listing on port ${PORT}`))
+
+server.listen(port, () => console.log(`Listening on port ${port}`));
