@@ -26,14 +26,12 @@ const io = require('socket.io')(server, {
 
 
 
-// global.io = socket
-// require('./utils/socket.js')
 
-const msgArr = []
+const chatArr = []
 
-const msgAddHandler = (socketId, msg) => {
-    msgArr.push({
-        socketId, msg
+const joinHandler = (socketId, name, stream) => {
+    chatArr.push({
+        userId: socketId, name, stream
     })
 }
 
@@ -45,14 +43,18 @@ io.on("connection", socket => {
         socket.broadcast.emit('callEnded')
     })
 
-    socket.emit('me', socket.id)
+    // socket.emit('me', socket.id)
 
-    socket.on('sendMsg', ({ msg }) => {
-        msgAddHandler(socket.id, msg)
+    socket.on('joinRoom', ({ name, stream }) => {
+        joinHandler(socket.id, name, stream)
 
-        io.emit('rcvMsg', msgArr)
-        console.log('send Msg=>', msg)
+        io.emit('room', chatArr)
+        if (chatArr.length > 1) {
+            io.emit('signal', chatArr)
+        }
+        console.log('join=>', name)
     })
+
 });
 
 

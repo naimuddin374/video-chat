@@ -7,10 +7,10 @@ import Join from '../pages/room/join'
 function AppRouter() {
     return (
         <Router>
-            <Join path='/join' />
+            {/* <Join path='/join' />
             <Room path='/room/:roomId' />
-            <VideoPlayer path='/call' />
-            <Home path='/' default />
+            <VideoPlayer path='/call' /> */}
+            <Room path='/' default />
         </Router>
     )
 }
