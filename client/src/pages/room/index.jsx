@@ -45,7 +45,10 @@ const Room = (props) => {
     const roomID = props.roomId;
 
     useEffect(() => {
-        socketRef.current = io.connect("/");
+        // socketRef.current = io.connect("/", { transports: ['websocket', 'polling', 'flashsocket'] });
+        // socketRef.current = io.connect("/");
+        // socketRef.current = io.connect("http://localhost:4000", { transports: ['websocket', 'polling', 'flashsocket'] })
+        socketRef.current = io.connect("https://lubyc-video-chat.herokuapp.com", { transports: ['websocket', 'polling', 'flashsocket'] })
         navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
             userVideo.current.srcObject = stream;
             socketRef.current.emit("join room", roomID);
@@ -84,6 +87,12 @@ const Room = (props) => {
             initiator: true,
             trickle: false,
             stream,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478?transport=udp' }
+                ]
+            }
         });
 
         peer.on("signal", signal => {
@@ -98,6 +107,12 @@ const Room = (props) => {
             initiator: false,
             trickle: false,
             stream,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478?transport=udp' }
+                ]
+            },
         })
 
         peer.on("signal", signal => {
