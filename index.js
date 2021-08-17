@@ -16,9 +16,19 @@ const io = require('socket.io')(server, {
 app.use(cors())
 app.use(bodyParser.json())
 
-app.get("/", (req, res) => {
-    res.send('Welcome to app')
-})
+
+// PRODUCTION ENV   
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(__dirname + "/client/build"))
+    app.get("*", (req, res) => {
+        res.sendFile(path.join(__dirname + "/client/build/index.html"))
+    })
+} else {
+    // DEVELOPMENT ENV
+    app.get("/", (req, res) => {
+        res.send('Welcome to app')
+    })
+}
 
 app.set('port', (process.env.PORT || 4000))
 
