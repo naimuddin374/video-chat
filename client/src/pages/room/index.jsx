@@ -1,128 +1,124 @@
-import React from 'react';
-import Peer from 'simple-peer'
+import React, { useEffect, useRef, useState } from "react";
+import io from "socket.io-client";
+import Peer from "simple-peer";
+import styled from "styled-components";
 
-import { io } from 'socket.io-client'
-const socket = io('http://localhost:4000')
+const Container = styled.div`
+    padding: 20px;
+    display: flex;
+    height: 100vh;
+    width: 90%;
+    margin: auto;
+    flex-wrap: wrap;
+`;
+
+const StyledVideo = styled.video`
+    height: 40%;
+    width: 50%;
+`;
+
+const Video = (props) => {
+    const ref = useRef();
+
+    useEffect(() => {
+        props.peer.on("stream", stream => {
+            ref.current.srcObject = stream;
+        })
+    }, []);
+
+    return (
+        <StyledVideo playsInline autoPlay ref={ref} />
+    );
+}
 
 
-const myVideo = React.createRef()
-const userVideo = React.createRef()
+const videoConstraints = {
+    height: window.innerHeight / 2,
+    width: window.innerWidth / 2
+};
 
-class Room extends React.Component {
-    state = {
-        users: [],
-        name: '',
-        stream: null,
-    }
+const Room = (props) => {
+    const [peers, setPeers] = useState([]);
+    const socketRef = useRef();
+    const userVideo = useRef();
+    const peersRef = useRef([]);
+    const roomID = props.roomId;
 
-    componentDidMount() {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-            .then(currentStream => {
-                this.setState({ stream: currentStream })
-                myVideo.current.srcObject = currentStream
-                // this.gotMedia(currentStream)
+    useEffect(() => {
+        socketRef.current = io.connect("http://localhost:4000");
+        navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
+            userVideo.current.srcObject = stream;
+            socketRef.current.emit("join room", roomID);
+            socketRef.current.on("all users", users => {
+                const peers = [];
+                users.forEach(userID => {
+                    const peer = createPeer(userID, socketRef.current.id, stream);
+                    peersRef.current.push({
+                        peerID: userID,
+                        peer,
+                    })
+                    peers.push(peer);
+                })
+                setPeers(peers);
             })
 
-        socket.on('room', (data) => {
-            this.setState({ users: data })
-            console.log('room', data)
+            socketRef.current.on("user joined", payload => {
+                const peer = addPeer(payload.signal, payload.callerID, stream);
+                peersRef.current.push({
+                    peerID: payload.callerID,
+                    peer,
+                })
+
+                setPeers(users => [...users, peer]);
+            });
+
+            socketRef.current.on("receiving returned signal", payload => {
+                const item = peersRef.current.find(p => p.peerID === payload.id);
+                item.peer.signal(payload.signal);
+            });
+        })
+    }, []);
+
+    function createPeer(userToSignal, callerID, stream) {
+        const peer = new Peer({
+            initiator: true,
+            trickle: false,
+            stream,
+        });
+
+        peer.on("signal", signal => {
+            socketRef.current.emit("sending signal", { userToSignal, callerID, signal })
         })
 
-        socket.on('signal', (data) => {
-            // this.setState({ users: data })
-            console.log('signal', data)
-        })
+        return peer;
     }
 
-    answerCall = () => {
-        // let { stream} = this.state
-
-        // const peer = new Peer({ initiator: false, trickle: false, stream })
-
-        // peer.on('signal', (data) => {
-        //     socket.emit('answerCall', { signal: data, to: call.from })
-        // })
-
-        // peer.on('stream', (currentStream) => {
-        //     userVideo.current.srcObject = currentStream
-        // })
-
-        // peer.signal(call.signal)
-        // connectionRef.current = peer
-    }
-
-    joinHandler = (e) => {
-        if (e.code === 'Enter' || e.code === 'NumpadEnter') {
-            let { name, stream } = this.state
-
-            if (!name)
-                return
-            socket.emit('joinRoom', { name, stream })
-            this.setState({ name: '' })
-        }
-    }
-
-    gotMedia = (stream) => {
-        var peer1 = new Peer({ initiator: true, stream: stream })
-        var peer2 = new Peer()
-
-        peer1.on('signal', data => {
-            peer2.signal(data)
+    function addPeer(incomingSignal, callerID, stream) {
+        const peer = new Peer({
+            initiator: false,
+            trickle: false,
+            stream,
         })
 
-        peer2.on('signal', data => {
-            peer1.signal(data)
+        peer.on("signal", signal => {
+            socketRef.current.emit("returning signal", { signal, callerID })
         })
 
-        peer2.on('stream', stream => {
-            // got remote video stream, now let's show it in a video tag
-            var video = document.querySelector('video')
+        peer.signal(incomingSignal);
 
-            if ('srcObject' in video) {
-                video.srcObject = stream
-            } else {
-                video.src = window.URL.createObjectURL(stream) // for older browsers
-            }
-
-            video.play()
-        })
+        return peer;
     }
 
+    return (
+        <Container>
+            <StyledVideo muted ref={userVideo} autoPlay playsInline />
+            {peers.map((peer, index) => {
+                return (
+                    <Video key={index} peer={peer} />
+                );
+            })}
+        </Container>
+    );
+};
 
-    render() {
-        const { users, stream, name } = this.state
-        console.log(users)
-
-        return (
-            <div>
-                <input
-                    type="text"
-                    onChange={(e) => this.setState({ name: e.target.value })}
-                    value={this.state.name}
-                    placeholder="Enter Name"
-                    onKeyPress={(e) => this.joinHandler(e)}
-                />
-
-                <br />
-                {stream && <div className='my-video'>
-                    <h5>{name || 'Name'}</h5>
-                    <video playsInline muted ref={myVideo} autoPlay style={{ width: 200 }} />
-                </div>}
-                <br />
-                <h3>Active User List ({users.length || 0})</h3>
-                <ul>
-                    {users && users.length > 0 && users.map(item => <li key={item.userId}>{item.name}</li>)}
-                </ul>
-
-
-                {/* <br />
-                <video id='video' /> */}
-
-            </div>
-        )
-    }
-}
-export default Room
-
-
-
+export default Room;

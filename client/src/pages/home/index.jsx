@@ -1,17 +1,28 @@
-import { Link } from "@reach/router";
-import { useContext } from 'react';
-import { SocketContext } from '../../app/SocketContext'
+import { useState } from 'react'
+import { navigate } from "@reach/router";
 
 function Home() {
-    // const { me } = useContext(SocketContext)
-    const me = '1'
+    const [title, setTitle] = useState('')
+
+    const joinHandler = () => {
+        if (!title) {
+            alert('The meeting title is required!')
+            return
+        }
+
+        navigate(`/room/${title}`)
+    }
+
     return (
         <div>
-            <Link to='/call'>Calling</Link>
-            <br />
-            <Link to={`/room/23423SAF`}>Room</Link>
-            <br />
-            <Link to={`/join`}>Join</Link>
+            <h2>Welcome to app</h2>
+            <input
+                type="text"
+                value={title}
+                placeholder='Enter Meeting Title'
+                onChange={(e) => setTitle(e.target.value)}
+            />
+            <button onClick={() => joinHandler()}>Start Meeting</button>
         </div>
     )
 }
