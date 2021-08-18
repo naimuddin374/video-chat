@@ -48,10 +48,12 @@ const Room = (props) => {
         // socketRef.current = io.connect("/", { transports: ['websocket', 'polling', 'flashsocket'] });
         // socketRef.current = io.connect("/");
         // socketRef.current = io.connect("http://localhost:4000", { transports: ['websocket', 'polling', 'flashsocket'] })
-        socketRef.current = io.connect("https://lubyc-video-chat.herokuapp.com", { transports: ['websocket', 'polling', 'flashsocket'] })
+        socketRef.current = io.connect("/", { transports: ['websocket', 'polling', 'flashsocket'] })
+
         navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
             userVideo.current.srcObject = stream;
             socketRef.current.emit("join room", roomID);
+
             socketRef.current.on("all users", users => {
                 const peers = [];
                 users.forEach(userID => {

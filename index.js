@@ -18,18 +18,24 @@ app.use(cors())
 app.use(bodyParser.json())
 
 
+app.use(express.static(__dirname + "/client/build"))
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname + "/client/build/index.html"))
+})
+
+
 // PRODUCTION ENV   
-if (process.env.NODE_ENV !== 'production') {
-    app.use(express.static(__dirname + "/client/build"))
-    app.get("*", (req, res) => {
-        res.sendFile(path.join(__dirname + "/client/build/index.html"))
-    })
-} else {
-    // DEVELOPMENT ENV
-    app.get("/", (req, res) => {
-        res.send('Welcome to app')
-    })
-}
+// if (process.env.NODE_ENV === 'production') {
+//     app.use(express.static(__dirname + "/client/build"))
+//     app.get("*", (req, res) => {
+//         res.sendFile(path.join(__dirname + "/client/build/index.html"))
+//     })
+// } else {
+//     // DEVELOPMENT ENV
+//     app.get("/", (req, res) => {
+//         res.send('Welcome to app')
+//     })
+// }
 
 app.set('port', (process.env.PORT || 4000))
 
@@ -42,6 +48,7 @@ const socketToRoom = {};
 
 io.on('connection', socket => {
     socket.on("join room", roomID => {
+        console.log('New user connected to' + roomID);
         if (users[roomID]) {
             // const length = users[roomID].length;
             // if (length === 20) {
@@ -76,6 +83,7 @@ io.on('connection', socket => {
         }
         socket.leave(roomID)
         socket.broadcast.emit("user left", socket.id);
+        console.log('User disconnected')
     });
 
 });
