@@ -45,10 +45,9 @@ const Room = (props) => {
     const roomID = props.roomId;
 
     useEffect(() => {
-        // socketRef.current = io.connect("/", { transports: ['websocket', 'polling', 'flashsocket'] });
-        socketRef.current = io.connect("https://video.lubyc.com/", { transports: ['websocket', 'polling', 'flashsocket'] });
         // socketRef.current = io.connect("http://localhost:4000", { transports: ['websocket', 'polling', 'flashsocket'] })
-        // socketRef.current = io.connect("/", { transports: ['websocket', 'polling', 'flashsocket'] })
+        // socketRef.current = io.connect("https://video.lubyc.com/", { transports: [] });
+        socketRef.current = io.connect("http://localhost:4000/", { transports: ['websocket'] });
 
         navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
             userVideo.current.srcObject = stream;
