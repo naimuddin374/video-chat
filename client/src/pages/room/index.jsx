@@ -47,7 +47,7 @@ const Room = (props) => {
     useEffect(() => {
         // socketRef.current = io.connect("http://localhost:4000", { transports: ['websocket', 'polling', 'flashsocket'] })
         // socketRef.current = io.connect("https://video.lubyc.com/", { transports: [] });
-        socketRef.current = io.connect("http://localhost:4000/", { transports: ['websocket'] });
+        socketRef.current = io.connect("/", { transports: ['websocket', 'polling', 'flashsocket'] });
 
         navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
             userVideo.current.srcObject = stream;
@@ -90,8 +90,19 @@ const Room = (props) => {
             stream,
             config: {
                 iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:global.stun.twilio.com:3478?transport=udp' }
+                    {
+                        'urls': 'stun:stun.l.google.com:19302'
+                    },
+                    {
+                        'urls': 'turn:192.158.29.39:3478?transport=udp',
+                        'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
+                        'username': 'naimuddin374'
+                    },
+                    {
+                        'urls': 'turn:192.158.29.39:3478?transport=tcp',
+                        'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
+                        'username': 'naimuddin374'
+                    }
                 ]
             }
         });
@@ -110,8 +121,19 @@ const Room = (props) => {
             stream,
             config: {
                 iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:global.stun.twilio.com:3478?transport=udp' }
+                    {
+                        'urls': 'stun:stun.l.google.com:19302'
+                    },
+                    {
+                        'urls': 'turn:192.158.29.39:3478?transport=udp',
+                        'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
+                        'username': 'naimuddin374'
+                    },
+                    {
+                        'urls': 'turn:192.158.29.39:3478?transport=tcp',
+                        'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
+                        'username': 'naimuddin374'
+                    }
                 ]
             },
         })
