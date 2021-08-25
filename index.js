@@ -13,6 +13,15 @@ app.use(cors());
 
 const PORT = process.env.PORT || 4000;
 
+
+
+app.use(express.static(__dirname + "/client/build"))
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname + "/client/build/index.html"))
+})
+
+
+
 app.get('/', (req, res) => {
     res.send('Running');
 });
