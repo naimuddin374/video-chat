@@ -1,6 +1,7 @@
 const app = require('express')()
 const server = require('http').createServer(app)
 const cors = require('cors')
+const morgan = require('morgan')
 
 const io = require('socket.io')(server, {
     cors: {
@@ -9,10 +10,20 @@ const io = require('socket.io')(server, {
     }
 })
 
+app.use(morgan())
 app.use(cors())
 
 
 const PORT = process.env.PORT || 5000
+
+
+app.use(express.static(__dirname + "/client/build"))
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname + "/client/build/index.html"))
+})
+
+
+
 
 app.get('/', (req, res) => {
     res.send('Server is running.')

@@ -5,6 +5,8 @@ const app = express()
 const bodyParser = require('body-parser')
 // var xss = require("xss")
 const path = require('path')
+const morgan = require('morgan')
+
 
 const server = http.createServer(app)
 const io = require('socket.io')(server, {
@@ -14,6 +16,7 @@ const io = require('socket.io')(server, {
     }
 })
 
+app.use(morgan('dev'))
 app.use(cors())
 app.use(bodyParser.json())
 
