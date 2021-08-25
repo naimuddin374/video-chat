@@ -1,49 +1,52 @@
-import { useContext } from "react"
-import { SocketContext } from "../app/SocketContext"
+import React, { useContext } from 'react';
+import { Grid, Typography, Paper, makeStyles } from '@material-ui/core';
 
+import { SocketContext } from '../app/SocketContext';
 
-function VideoPlayer() {
-    const classes = {
-        wrapper: {
-            width: '80%',
-            margin: '0 auto',
-            backgroundColor: '#f4f4f4',
-            height: '100%'
+const useStyles = makeStyles((theme) => ({
+    video: {
+        width: '550px',
+        [theme.breakpoints.down('xs')]: {
+            width: '300px',
         },
-        videoWrap: {
-            width: 250,
-            float: 'left',
-            margin: 10,
-            border: '1px solid #ccc',
-            textAlign: 'center'
+    },
+    gridContainer: {
+        justifyContent: 'center',
+        [theme.breakpoints.down('xs')]: {
+            flexDirection: 'column',
         },
-        video: {
-            width: 250,
-            height: 'auto'
-        }
-    }
+    },
+    paper: {
+        padding: '10px',
+        border: '2px solid black',
+        margin: '10px',
+    },
+}));
 
-    const { name, callAccepted, myVideo, userVideo, callEnded, stream, call } = useContext(SocketContext)
+const VideoPlayer = () => {
+    const { name, callAccepted, myVideo, userVideo, callEnded, stream, call } = useContext(SocketContext);
+    const classes = useStyles();
 
     return (
-        <div style={classes.wrapper}>
-            {stream && <div className='my-video' style={classes.videoWrap}>
-                <h5>{name || 'Name'}</h5>
-                <video placeInline muted ref={myVideo} autoPlay style={classes.video} />
-            </div>}
+        <Grid container className={classes.gridContainer}>
+            {stream && (
+                <Paper className={classes.paper}>
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="h5" gutterBottom>{name || 'Name'}</Typography>
+                        <video playsInline muted ref={myVideo} autoPlay className={classes.video} />
+                    </Grid>
+                </Paper>
+            )}
+            {callAccepted && !callEnded && (
+                <Paper className={classes.paper}>
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="h5" gutterBottom>{call.name || 'Name'}</Typography>
+                        <video playsInline ref={userVideo} autoPlay className={classes.video} />
+                    </Grid>
+                </Paper>
+            )}
+        </Grid>
+    );
+};
 
-
-            {callAccepted && !callEnded &&
-                <div className='user-video' style={classes.videoWrap}>
-                    <h5>{call.name || 'Name'}</h5>
-                    <video placeInline ref={userVideo} autoPlay style={classes.video} />
-                </div>
-            }
-
-
-        </div>
-    )
-}
-export default VideoPlayer
-
-
+export default VideoPlayer;
