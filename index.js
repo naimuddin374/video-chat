@@ -85,8 +85,8 @@ io.on('connection', socket => {
             room = room.filter(id => id !== socket.id);
             users[roomID] = room;
         }
-        socket.leave(roomID)
-        socket.broadcast.emit("user left", socket.id);
+        // socket.leave(roomID)
+        // socket.broadcast.emit("user left", socket.id);
         console.log('User disconnected')
     });
 

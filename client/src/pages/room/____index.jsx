@@ -37,21 +37,6 @@ const videoConstraints = {
     width: window.innerWidth / 2
 };
 
-
-const iceServers = [
-    {
-        'urls': 'turn:192.158.29.39:3478?transport=udp',
-        'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
-        'username': 'naimuddin374'
-    },
-    {
-        'urls': 'turn:192.158.29.39:3478?transport=tcp',
-        'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
-        'username': 'naimuddin374'
-    }
-]
-
-
 const Room = (props) => {
     const [peers, setPeers] = useState([]);
     const socketRef = useRef();
@@ -59,12 +44,10 @@ const Room = (props) => {
     const peersRef = useRef([]);
     const roomID = props.roomId;
 
-    const connectURL = 'https://lubyc-video-chat.herokuapp.com/'
-
-
     useEffect(() => {
-
-        socketRef.current = io.connect(connectURL, { transports: ['websocket', 'polling', 'flashsocket'] });
+        // socketRef.current = io.connect("http://localhost:4000", { transports: ['websocket', 'polling', 'flashsocket'] })
+        // socketRef.current = io.connect("https://video.lubyc.com/", { transports: [] });
+        socketRef.current = io.connect("http://localhost:4000/", { transports: ['websocket', 'polling', 'flashsocket'] });
 
         navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
             userVideo.current.srcObject = stream;
@@ -106,7 +89,21 @@ const Room = (props) => {
             trickle: false,
             stream,
             config: {
-                iceServers
+                iceServers: [
+                    {
+                        'urls': 'stun:stun.l.google.com:19302'
+                    },
+                    {
+                        'urls': 'turn:192.158.29.39:3478?transport=udp',
+                        'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
+                        'username': 'naimuddin374'
+                    },
+                    {
+                        'urls': 'turn:192.158.29.39:3478?transport=tcp',
+                        'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
+                        'username': 'naimuddin374'
+                    }
+                ]
             }
         });
 
@@ -123,8 +120,22 @@ const Room = (props) => {
             trickle: false,
             stream,
             config: {
-                iceServers
-            }
+                iceServers: [
+                    {
+                        'urls': 'stun:stun.l.google.com:19302'
+                    },
+                    {
+                        'urls': 'turn:192.158.29.39:3478?transport=udp',
+                        'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
+                        'username': 'naimuddin374'
+                    },
+                    {
+                        'urls': 'turn:192.158.29.39:3478?transport=tcp',
+                        'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
+                        'username': 'naimuddin374'
+                    }
+                ]
+            },
         })
 
         peer.on("signal", signal => {
