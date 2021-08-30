@@ -64,7 +64,7 @@ const Room = (props) => {
 
     useEffect(() => {
 
-        socketRef.current = io.connect(connectURL, { transports: ['websocket', 'polling', 'flashsocket'] });
+        socketRef.current = io.connect(connectURL, { transports: ['websocket'], wsEngine: 'uws' });
 
         navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
             userVideo.current.srcObject = stream;
