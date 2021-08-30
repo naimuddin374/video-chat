@@ -59,7 +59,7 @@ const Room = (props) => {
     const peersRef = useRef([]);
     const roomID = props.roomId;
 
-    const connectURL = 'https://video.lubyc.com:4000/'
+    const connectURL = 'https://video.lubyc.com:4000/adfa/'
 
 
     useEffect(() => {
