@@ -38,18 +38,18 @@ const videoConstraints = {
 };
 
 
-const iceServers = [
-    {
-        'urls': 'turn:192.158.29.39:3478?transport=udp',
-        'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
-        'username': 'naimuddin374'
-    },
-    {
-        'urls': 'turn:192.158.29.39:3478?transport=tcp',
-        'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
-        'username': 'naimuddin374'
-    }
-]
+// const iceServers = [
+//     {
+//         'urls': 'turn:192.158.29.39:3478?transport=udp',
+//         'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
+//         'username': 'naimuddin374'
+//     },
+//     {
+//         'urls': 'turn:192.158.29.39:3478?transport=tcp',
+//         'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
+//         'username': 'naimuddin374'
+//     }
+// ]
 
 
 const Room = (props) => {
@@ -59,7 +59,7 @@ const Room = (props) => {
     const peersRef = useRef([]);
     const roomID = props.roomId;
 
-    const connectURL = 'https://lubyc-video-chat.herokuapp.com/'
+    const connectURL = 'https://video.lubyc.com:4000/'
 
 
     useEffect(() => {
@@ -106,7 +106,21 @@ const Room = (props) => {
             trickle: false,
             stream,
             config: {
-                iceServers
+                // 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]
+                iceServers: [{
+                    urls: ["stun:bn-turn1.xirsys.com"]
+                }, {
+                    username: "IdhUDAxDcRxnSC8aI-IYzTDFO9Uf83Z6WORkPuSJJOsGaPBksO4Rpz0hagpeH0uPAAAAAGEtIs9uYWltdWRkaW4zNzQ=",
+                    credential: "c7b436a0-09bf-11ec-ac24-0242ac140004",
+                    urls: [
+                        "turn:bn-turn1.xirsys.com:80?transport=udp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
+                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"
+                    ]
+                }]
             }
         });
 
@@ -123,7 +137,20 @@ const Room = (props) => {
             trickle: false,
             stream,
             config: {
-                iceServers
+                iceServers: [{
+                    urls: ["stun:bn-turn1.xirsys.com"]
+                }, {
+                    username: "IdhUDAxDcRxnSC8aI-IYzTDFO9Uf83Z6WORkPuSJJOsGaPBksO4Rpz0hagpeH0uPAAAAAGEtIs9uYWltdWRkaW4zNzQ=",
+                    credential: "c7b436a0-09bf-11ec-ac24-0242ac140004",
+                    urls: [
+                        "turn:bn-turn1.xirsys.com:80?transport=udp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
+                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
+                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
+                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"
+                    ]
+                }]
             }
         })
 
