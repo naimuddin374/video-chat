@@ -1,35 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import Peer from "simple-peer";
-import styled from "styled-components";
-
-const Container = styled.div`
-    padding: 20px;
-    display: flex;
-    height: 100vh;
-    width: 90%;
-    margin: auto;
-    flex-wrap: wrap;
-`;
-
-const StyledVideo = styled.video`
-    height: 40%;
-    width: 50%;
-`;
-
-const Video = (props) => {
-    const ref = useRef();
-
-    useEffect(() => {
-        props.peer.on("stream", stream => {
-            ref.current.srcObject = stream;
-        })
-    }, []);
-
-    return (
-        <StyledVideo playsInline autoPlay ref={ref} />
-    );
-}
+import { navigate } from '@reach/router'
+import Video from './video'
 
 
 const videoConstraints = {
@@ -38,18 +11,23 @@ const videoConstraints = {
 };
 
 
-// const iceServers = [
-//     {
-//         'urls': 'turn:192.158.29.39:3478?transport=udp',
-//         'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
-//         'username': 'naimuddin374'
-//     },
-//     {
-//         'urls': 'turn:192.158.29.39:3478?transport=tcp',
-//         'credential': '1ff1c682-012f-11ec-95c6-0242ac150003',
-//         'username': 'naimuddin374'
-//     }
-// ]
+const iceServers = [{
+    urls: ["stun:bn-turn1.xirsys.com"]
+}, {
+    username: "IdhUDAxDcRxnSC8aI-IYzTDFO9Uf83Z6WORkPuSJJOsGaPBksO4Rpz0hagpeH0uPAAAAAGEtIs9uYWltdWRkaW4zNzQ=",
+    credential: "c7b436a0-09bf-11ec-ac24-0242ac140004",
+    urls: [
+        "turn:bn-turn1.xirsys.com:80?transport=udp",
+        "turn:bn-turn1.xirsys.com:3478?transport=udp",
+        "turn:bn-turn1.xirsys.com:80?transport=tcp",
+        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
+        "turns:bn-turn1.xirsys.com:443?transport=tcp",
+        "turns:bn-turn1.xirsys.com:5349?transport=tcp"
+    ]
+}]
+
+const connectURL = process.env.NODE_ENV === 'production' ? 'https://video.lubyc.com/' : 'http://localhost:4000/'
+
 
 
 const Room = (props) => {
@@ -58,19 +36,24 @@ const Room = (props) => {
     const userVideo = useRef();
     const peersRef = useRef([]);
     const roomID = props.roomId;
+    const [localStream, setLocalStream] = useState(null);
 
-    const connectURL = 'https://video.lubyc.com/'
+
 
 
     useEffect(() => {
 
         socketRef.current = io.connect(connectURL, { transports: ['websocket'], wsEngine: 'uws' });
 
-        navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
-            userVideo.current.srcObject = stream;
-            socketRef.current.emit("join room", roomID);
+        navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false }).then(stream => {
+            setLocalStream(stream)
 
-            socketRef.current.on("all users", users => {
+            userVideo.current.srcObject = stream;
+            socketRef.current.emit("joinRoom", roomID);
+
+
+            // CHECK ALREADY USERS
+            socketRef.current.on("allUsers", users => {
                 const peers = [];
                 users.forEach(userID => {
                     const peer = createPeer(userID, socketRef.current.id, stream);
@@ -78,25 +61,47 @@ const Room = (props) => {
                         peerID: userID,
                         peer,
                     })
-                    peers.push(peer);
+                    peers.push({ peerID: userID, peer });
                 })
                 setPeers(peers);
             })
 
-            socketRef.current.on("user joined", payload => {
+
+
+
+            // JOIN NEW USER
+            socketRef.current.on("userJoined", payload => {
                 const peer = addPeer(payload.signal, payload.callerID, stream);
                 peersRef.current.push({
                     peerID: payload.callerID,
                     peer,
                 })
-
-                setPeers(users => [...users, peer]);
+                setPeers(users => [...users, { peer, peerID: payload.callerID }]);
             });
 
-            socketRef.current.on("receiving returned signal", payload => {
+
+
+            // RECEIVING RETURN SIGNAL
+            socketRef.current.on("receivingReturnedSignal", payload => {
                 const item = peersRef.current.find(p => p.peerID === payload.id);
-                item.peer.signal(payload.signal);
+                if (item) {
+                    item.peer.signal(payload.signal);
+                }
             });
+
+            // LEFT USER
+            socketRef.current.on('userLeft', id => {
+                const peerObj = peersRef.current.find(item => item.peerID === id)
+                if (peerObj) {
+                    peerObj.peer.destroy()
+                }
+                const peers = peersRef.current.filter(item => item.peerID !== id)
+                peersRef.current = peers
+                setPeers(peers)
+            })
+
+
+
         })
     }, []);
 
@@ -105,27 +110,11 @@ const Room = (props) => {
             initiator: true,
             trickle: false,
             stream,
-            config: {
-                // 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]
-                iceServers: [{
-                    urls: ["stun:bn-turn1.xirsys.com"]
-                }, {
-                    username: "IdhUDAxDcRxnSC8aI-IYzTDFO9Uf83Z6WORkPuSJJOsGaPBksO4Rpz0hagpeH0uPAAAAAGEtIs9uYWltdWRkaW4zNzQ=",
-                    credential: "c7b436a0-09bf-11ec-ac24-0242ac140004",
-                    urls: [
-                        "turn:bn-turn1.xirsys.com:80?transport=udp",
-                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
-                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
-                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
-                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
-                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"
-                    ]
-                }]
-            }
+            config: { iceServers }
         });
 
         peer.on("signal", signal => {
-            socketRef.current.emit("sending signal", { userToSignal, callerID, signal })
+            socketRef.current.emit("sendingSignal", { userToSignal, callerID, signal })
         })
 
         return peer;
@@ -136,26 +125,11 @@ const Room = (props) => {
             initiator: false,
             trickle: false,
             stream,
-            config: {
-                iceServers: [{
-                    urls: ["stun:bn-turn1.xirsys.com"]
-                }, {
-                    username: "IdhUDAxDcRxnSC8aI-IYzTDFO9Uf83Z6WORkPuSJJOsGaPBksO4Rpz0hagpeH0uPAAAAAGEtIs9uYWltdWRkaW4zNzQ=",
-                    credential: "c7b436a0-09bf-11ec-ac24-0242ac140004",
-                    urls: [
-                        "turn:bn-turn1.xirsys.com:80?transport=udp",
-                        "turn:bn-turn1.xirsys.com:3478?transport=udp",
-                        "turn:bn-turn1.xirsys.com:80?transport=tcp",
-                        "turn:bn-turn1.xirsys.com:3478?transport=tcp",
-                        "turns:bn-turn1.xirsys.com:443?transport=tcp",
-                        "turns:bn-turn1.xirsys.com:5349?transport=tcp"
-                    ]
-                }]
-            }
+            config: { iceServers }
         })
 
         peer.on("signal", signal => {
-            socketRef.current.emit("returning signal", { signal, callerID })
+            socketRef.current.emit("returningSignal", { signal, callerID })
         })
 
         peer.signal(incomingSignal);
@@ -163,15 +137,31 @@ const Room = (props) => {
         return peer;
     }
 
+
+
+
+
+    const leaveHandler = () => {
+        socketRef.current.emit('leaveRoom')
+        navigate('/')
+    }
+
+
+
     return (
-        <Container>
-            <StyledVideo muted ref={userVideo} autoPlay playsInline />
-            {peers.map((peer, index) => {
+        <div style={{ padding: 20, display: "flex", height: '100vh', width: '90%', margin: 'auto', flexWrap: 'wrap' }}>
+            <video muted ref={userVideo} autoPlay playsInline style={{ height: '40%', width: '50%' }} />
+
+            {/* <button onClick={() => toggleMic()} style={{ height: 60 }}>Mute</button> */}
+
+            {peers.map((item) => {
                 return (
-                    <Video key={index} peer={peer} />
+                    <Video key={item.peerID} peer={item.peer} />
                 );
             })}
-        </Container>
+
+            <button style={{ height: 40 }} onClick={() => leaveHandler()}>Leave</button>
+        </div>
     );
 };
 
