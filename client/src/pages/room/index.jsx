@@ -165,7 +165,7 @@ const Room = (props) => {
             <video muted ref={userVideo} autoPlay playsInline style={{ height: '40%', width: '50%' }} />
 
             <button onClick={() => toggleMic()} style={{ height: 40 }}>Mute</button>
-            <button onClick={() => toggleVideo()} style={{ height: 40 }}>Video</button>
+            {/* <button onClick={() => toggleVideo()} style={{ height: 40 }}>Video</button> */}
 
             {peers.map((item) => {
                 return (
