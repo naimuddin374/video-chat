@@ -146,13 +146,30 @@ const Room = (props) => {
         navigate('/')
     }
 
+    function mute() {
+        localStream.getTracks().forEach(track => track.enabled = !track.enabled);
+    }
 
+    function toggleVideo() {
+        if (localStream != null && localStream.getVideoTracks().length > 0) {
+            localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled;
+        }
+
+    }
+
+    function toggleMic() {
+        if (localStream != null && localStream.getAudioTracks().length > 0) {
+            localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled;
+        }
+    }
 
     return (
         <div style={{ padding: 20, display: "flex", height: '100vh', width: '90%', margin: 'auto', flexWrap: 'wrap' }}>
             <video muted ref={userVideo} autoPlay playsInline style={{ height: '40%', width: '50%' }} />
 
-            {/* <button onClick={() => toggleMic()} style={{ height: 60 }}>Mute</button> */}
+            <button onClick={() => toggleMic()} style={{ height: 40 }}>Mute</button>
+            <button onClick={() => mute()} style={{ height: 40 }}>Mute 2</button>
+            <button onClick={() => toggleVideo()} style={{ height: 40 }}>Video</button>
 
             {peers.map((item) => {
                 return (
